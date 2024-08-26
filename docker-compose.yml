@@ -1,0 +1,16 @@
+﻿services:
+  authentication:
+    image: authentication
+    build:
+      context: .
+      dockerfile: Authentication/Dockerfile
+  sql:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: sql
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "1"
+      MSSQL_SA_PASSWORD: "#SqlPassword1"
+      MSSQL_PID: "Developer"
+      MSSQL_USER: "sa"
