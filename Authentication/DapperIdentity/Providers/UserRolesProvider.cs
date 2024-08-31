@@ -16,12 +16,14 @@ internal class UserRolesProvider
     public async Task<IEnumerable<UserRole>> GetRolesAsync(ApplicationUser user) {
         var command = 
         $"""
-         
-                 SELECT r.Id AS RoleId, r.Name AS RoleName
-                 FROM [{_databaseConnectionFactory.DbSchema}].[Roles] AS r
-                 INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserRoles] AS ur ON ur.RoleId = r.Id
-                 WHERE ur.UserId = @UserId
-                 
+         SELECT 
+             R.Id AS RoleId, 
+             R.Name AS RoleName
+         FROM [{_databaseConnectionFactory.DbSchema}].[Roles] AS R
+         INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserRoles] AS UR
+         ON UR.RoleId = R.Id
+         WHERE 
+             UR.UserId = @UserId
          """;
 
         await using var sqlConnection = await _databaseConnectionFactory.CreateConnectionAsync();
