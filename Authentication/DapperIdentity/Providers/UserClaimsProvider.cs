@@ -17,12 +17,12 @@ internal class UserClaimsProvider
     public async Task<IList<Claim>> GetClaimsAsync(ApplicationUser user)
     {
         var command =
-        $@"
-        SELECT *
-        FROM [{_databaseConnectionFactory.DbSchema}].[UserClaims]
-        WHERE 
-            UserId = @UserId
-        ";
+            $"""
+             SELECT *
+             FROM [{_databaseConnectionFactory.DbSchema}].[UserClaims]
+             WHERE 
+                 UserId = @UserId
+             """;
 
         await using var sqlConnection = await _databaseConnectionFactory.CreateConnectionAsync();
         return (

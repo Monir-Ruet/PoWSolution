@@ -19,7 +19,7 @@ internal class UsersProvider
             var command = 
             $@"
             INSERT INTO [{_databaseConnectionFactory.DbSchema}].[Users]
-            VALUES (@Id, @UserName, @NormalizedUserName, @Email, @NormalizedEmail, @EmailConfirmed, @PasswordHash, @SecurityStamp, @ConcurrencyStamp,
+            VALUES (@Id, @UserName, @NormalizedUserName, @Email, @Picture, @NormalizedEmail, @EmailConfirmed, @PasswordHash, @SecurityStamp, @ConcurrencyStamp,
                     @PhoneNumber, @PhoneNumberConfirmed, @TwoFactorEnabled, @LockoutEnd, @LockoutEnabled, @AccessFailedCount)
             ";
 
@@ -31,6 +31,7 @@ internal class UsersProvider
                     user.UserName,
                     user.NormalizedUserName,
                     user.Email,
+                    user.Picture,
                     user.NormalizedEmail,
                     user.EmailConfirmed,
                     user.PasswordHash,
@@ -77,7 +78,12 @@ internal class UsersProvider
         public async Task<ApplicationUser?> FindByIdAsync(Guid userId) {
             var command = 
             $@"
-            SELECT *
+            SELECT
+                Id,
+                UserName,
+                Email,
+                PhoneNumber,
+                Picture
             FROM [{_databaseConnectionFactory.DbSchema}].[Users]
             WHERE 
                 Id = @Id
@@ -95,7 +101,12 @@ internal class UsersProvider
         public async Task<ApplicationUser?> FindByNameAsync(string normalizedUserName) {
             var command = 
             $@"
-            SELECT *
+            SELECT 
+                Id,
+                UserName,
+                Email,
+                PhoneNumber,
+                Picture
             FROM [{_databaseConnectionFactory.DbSchema}].[Users]
             WHERE 
                 NormalizedUserName = @NormalizedUserName
@@ -111,7 +122,12 @@ internal class UsersProvider
         public async Task<ApplicationUser?> FindByEmailAsync(string normalizedEmail) {
             var command = 
             $@"
-            SELECT *
+            SELECT
+                Id,
+                UserName,
+                Email,
+                PhoneNumber,
+                Picture
             FROM [{_databaseConnectionFactory.DbSchema}].[Users]
             WHERE 
                 NormalizedEmail = @NormalizedEmail
@@ -134,6 +150,7 @@ internal class UsersProvider
                 UserName = @UserName,
                 NormalizedUserName = @NormalizedUserName,
                 Email = @Email,
+                Picture = @Picture,
                 NormalizedEmail = @NormalizedEmail,
                 EmailConfirmed = @EmailConfirmed,
                 PasswordHash = @PasswordHash, 
@@ -157,6 +174,7 @@ internal class UsersProvider
                     user.UserName,
                     user.NormalizedUserName,
                     user.Email,
+                    user.Picture,
                     user.NormalizedEmail,
                     user.EmailConfirmed,
                     user.PasswordHash,
@@ -176,7 +194,8 @@ internal class UsersProvider
                     $@"
                     DELETE
                     FROM [{_databaseConnectionFactory.DbSchema}].[UserClaims]
-                    WHERE UserId = @UserId
+                    WHERE 
+                        UserId = @UserId
                     ";
 
                     await sqlConnection.ExecuteAsync(deleteClaimsCommand, new {
@@ -187,7 +206,8 @@ internal class UsersProvider
                     $@"
                     INSERT INTO [{_databaseConnectionFactory.DbSchema}].[UserClaims] 
                         (UserId, ClaimType, ClaimValue)
-                    VALUES (@UserId, @ClaimType, @ClaimValue)
+                    VALUES 
+                        (@UserId, @ClaimType, @ClaimValue)
                     ";
 
                     await sqlConnection.ExecuteAsync(insertClaimsCommand, user.Claims.Select(x => new 
@@ -215,7 +235,8 @@ internal class UsersProvider
                     $@"
                     INSERT INTO [{_databaseConnectionFactory.DbSchema}].[UserLogins] 
                         (LoginProvider, ProviderKey, ProviderDisplayName, UserId)
-                    VALUES (@LoginProvider, @ProviderKey, @ProviderDisplayName, @UserId)
+                    VALUES 
+                        (@LoginProvider, @ProviderKey, @ProviderDisplayName, @UserId)
                     ";
 
                     await sqlConnection.ExecuteAsync(insertLoginsCommand, user.Logins.Select(x => new 
@@ -244,7 +265,8 @@ internal class UsersProvider
                     $@"
                     INSERT INTO [{_databaseConnectionFactory.DbSchema}].[UserRoles] 
                         (UserId, RoleId)
-                    VALUES (@UserId, @RoleId)
+                    VALUES 
+                        (@UserId, @RoleId)
                     ";
 
                     await sqlConnection.ExecuteAsync(insertRolesCommand, user.Roles.Select(x => new 
@@ -272,7 +294,8 @@ internal class UsersProvider
                     $@"
                     INSERT INTO [{_databaseConnectionFactory.DbSchema}].[UserTokens] 
                         (UserId, LoginProvider, Name, Value)
-                    VALUES (@UserId, @LoginProvider, @Name, @Value)
+                    VALUES 
+                        (@UserId, @LoginProvider, @Name, @Value)
                     ";
 
                     await sqlConnection.ExecuteAsync(insertTokensCommand, user.Tokens.Select(x => new 
@@ -311,12 +334,19 @@ internal class UsersProvider
         public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName) {
             var command = 
             $@"
-            SELECT *
-            FROM [{_databaseConnectionFactory.DbSchema}].[Users] AS u
-            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserRoles] AS ur ON u.Id = ur.UserId
-            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[Roles] AS r ON ur.RoleId = r.Id
+            SELECT
+                U.Id,
+                U.UserName,
+                U.Email,
+                U.PhoneNumber
+                U.Picture
+            FROM [{_databaseConnectionFactory.DbSchema}].[Users] AS U
+            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserRoles] AS UR 
+            ON U.Id = UR.UserId
+            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[Roles] AS R 
+            ON UR.RoleId = R.Id
             WHERE 
-                r.Name = @RoleName
+                R.Name = @RoleName
             ";
 
             await using var sqlConnection = await _databaseConnectionFactory.CreateConnectionAsync();
@@ -329,10 +359,18 @@ internal class UsersProvider
         public async Task<IList<ApplicationUser>> GetUsersForClaimAsync(Claim claim) {
             var command = 
             $@"
-            SELECT *
-            FROM [{_databaseConnectionFactory.DbSchema}].[Users] AS u
-            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserClaims] AS uc ON u.Id = uc.UserId
-            WHERE uc.ClaimType = @ClaimType AND uc.ClaimValue = @ClaimValue
+            SELECT
+                U.Id,
+                U.UserName,
+                U.Email,
+                U.PhoneNumber
+                U.Picture
+            FROM [{_databaseConnectionFactory.DbSchema}].[Users] AS U
+            INNER JOIN [{_databaseConnectionFactory.DbSchema}].[UserClaims] AS UC 
+            ON U.Id = UC.UserId
+            WHERE 
+                UC.ClaimType = @ClaimType 
+            AND UC.ClaimValue = @ClaimValue
             ";
 
             await using var sqlConnection = await _databaseConnectionFactory.CreateConnectionAsync();
@@ -346,7 +384,12 @@ internal class UsersProvider
         public async Task<IEnumerable<ApplicationUser>> GetAllUsers() {
             var command = 
             $@"
-            SELECT *
+            SELECT
+                Id,
+                UserName,
+                Email,
+                PhoneNumber,
+                Picture
             FROM [{_databaseConnectionFactory.DbSchema}].[Users]
             ";
 

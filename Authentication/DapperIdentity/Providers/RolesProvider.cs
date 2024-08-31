@@ -18,7 +18,8 @@ internal class RolesProvider
         var sql = 
         $@"
         INSERT INTO [{_databaseConnectionFactory.DbSchema}].[Roles]
-        VALUES (@Id, @Name, @NormalizedName, @ConcurrencyStamp)
+        VALUES 
+            (@Id, @Name, @NormalizedName, @ConcurrencyStamp)
         ";
 
         int rowsInserted;
@@ -159,9 +160,10 @@ internal class RolesProvider
 
     public async Task<IEnumerable<ApplicationRole>> GetAllRolesAsync() {
         var command = 
-        $@"
-        SELECT * FROM [{_databaseConnectionFactory.DbSchema}].[Roles]
-        ";
+            $"""
+             SELECT * 
+             FROM [{_databaseConnectionFactory.DbSchema}].[Roles]
+             """;
 
         await using var sqlConnection = await _databaseConnectionFactory.CreateConnectionAsync();
         return await sqlConnection.QueryAsync<ApplicationRole>(command);

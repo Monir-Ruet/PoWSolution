@@ -175,7 +175,8 @@ public class OAuthController(SignInManager<ApplicationUser> signInManager,
             user = new ApplicationUser()
             {
                 Email = principal.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value,
-                UserName = principal.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value
+                UserName = principal.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value,
+                Picture = principal.FindFirst( claim => claim.Type == "picture")?.Value
             };
 
             var userExist = await userManager.FindByEmailAsync(email);
